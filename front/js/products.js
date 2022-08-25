@@ -25,25 +25,28 @@ fetch(KanapAPI)
         title.innerText = product.name;
         price.innerText = product.price;
         description.innerText = product.description;
+        //  Ajouts des options de couleurs
         for (let addColor of product.colors) {
             const newColor = document.createElement("option");
             newColor.setAttribute("value", `${addColor}`);
             newColor.innerText = addColor;
             colors.appendChild(newColor);
         }
-        
         toCart.addEventListener("click", function() {
             let cartList = localStorage.getItem('cart');
+            // Verification qu'une couleur et une quantité sont bien attribué avant de passer à la tache suivante
             if(colors.value == "" || qty.value < 1){
                 alert("Veuillez choisir une couleur et une quantité")
             }
             
             else{
+                // Verification de l'existance d'un panier
                 if (cartList){
                     let valueCart = JSON.parse(cartList);
                     console.log(valueCart);
                     let returnCart = valueCart.find(contentValue => contentValue._id === id && contentValue.color === colors.value);
                     console.log(returnCart);
+                    //  Verification du contenue du panier
                     if (returnCart) {
                         returnCart.qty += parseInt(qty.value);
                         alert('La quantité de votre articlé dans le panier a été mis à jour')
@@ -74,6 +77,7 @@ function productFormat (data) {
     };
 };
 
+//  Ajout au panier d'un produit
 function cartUpdate (product) {
     localStorage.setItem('cart', JSON.stringify(product));
     let cartList = localStorage.getItem('cart');
