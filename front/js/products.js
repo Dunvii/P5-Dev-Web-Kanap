@@ -11,7 +11,6 @@ const description = document.querySelector('#description');
 const colors = document.querySelector('#colors');
 const toCart = document.querySelector("#addToCart");
 const qty = document.querySelector("#quantity");
-console.log(KanapAPI);
 
 // Affichage des élements du produits
 fetch(KanapAPI)
@@ -45,15 +44,16 @@ fetch(KanapAPI)
                     let valueCart = JSON.parse(cartList);
                     console.log(valueCart);
                     let returnCart = valueCart.find(contentValue => contentValue._id === id && contentValue.color === colors.value);
-                    console.log(returnCart);
                     //  Verification du contenue du panier
                     if (returnCart) {
                         returnCart.qty += parseInt(qty.value);
-                        alert('La quantité de votre articlé dans le panier a été mis à jour')
+                        alert('La quantité de votre articlé dans le panier a été mis à jour');
+                        qty.value = 1;
                     }
                     else {
                         valueCart.push(productFormat(product));
-                        alert("L'article a été ajouté à votre panier.")
+                        alert("L'article a été ajouté à votre panier.");
+                        qty.value = 1;
                     }
                     cartUpdate(valueCart);
                     
@@ -62,6 +62,9 @@ fetch(KanapAPI)
                     let valueCart = [];
                     valueCart.push(productFormat(product));
                     cartUpdate(valueCart);
+                    alert("L'article a été ajouté à votre panier.");
+                    qty.value = 1;
+
                 }
             }
         }
@@ -81,5 +84,4 @@ function productFormat (data) {
 function cartUpdate (product) {
     localStorage.setItem('cart', JSON.stringify(product));
     let cartList = localStorage.getItem('cart');
-    console.log(cartList);
 }
