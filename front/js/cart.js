@@ -4,7 +4,17 @@ let addArticle = document.querySelector('#cart__items');
 let totalQty = document.querySelector('#totalQuantity');
 let totalPrice = document.querySelector('#totalPrice');
 let allArticlePrice = [];
+class articlePrice {
+    constructor(id, price, color, qty, total) {
+        this.id = id;
+        this.price = price;
+        this.color = color;
+        this.qty = qty;
+        this.total = total;
+    }
+}
 
+// Verification si présence de panier(Si non affiche "0" + panier vide)
 if (cartList === null) {
     updateShowCart();
 }
@@ -14,6 +24,21 @@ else {
     fetch(KanapApiId)
     .then((res) => res.json())
     .then ((infoProduct) => {
+
+        // Preparation informations pour calcul total quantité + prix
+        if(allArticlePrice){
+            let aAP = allArticlePrice.find(contentValue => contentValue.id === product._id && contentValue.color === product.color );
+            if (!aAP){
+                let addProduct = new articlePrice(infoProduct._id, infoProduct.price, product.color, product.qty,(infoProduct.price * product.qty));
+                allArticlePrice.push(addProduct);
+            }
+        }
+        else {
+        let addProduct = new articlePrice(infoProduct._id, infoProduct.price);
+        allArticlePrice.push(addProduct);
+        }
+
+        // Insertion articles dans la page
         const newProduct = document.createElement("article");
         newProduct.setAttribute("class" , "cart__item");
         newProduct.setAttribute("data-id" , product._id);
@@ -39,6 +64,8 @@ else {
                     </div>
                     </div>`
         addArticle.appendChild(newProduct);
+
+        // Récupération des élements DOM liées à son articles
         const buttonArticle = document.querySelector(`[data-id="${product._id}"][data-color="${product.color}"] .deleteItem`);
         const delArticle = document.querySelector(`[data-id="${product._id}"][data-color="${product.color}"]`);
         const qtyInput = document.querySelector(`[data-id="${product._id}"][data-color="${product.color}"] .itemQuantity`);
@@ -50,6 +77,9 @@ else {
             let article = cartList.filter(function(article) {
                 return !(article._id == returnCart._id && article.color == returnCart.color)
             });
+            let returnAAP = allArticlePrice.find(contentValue => contentValue.id === product._id && contentValue.color === product.color);
+            indexElement = allArticlePrice.indexOf(returnAAP);
+            allArticlePrice.splice(indexElement, 1);
             cartUpdate(article);
             updateShowCart();
         });
@@ -62,6 +92,9 @@ else {
             else {
                 let returnCart = cartList.find(contentValue => contentValue._id === product._id && contentValue.color === product.color);
                 returnCart.qty = parseInt(qtyInput.value);
+                let returnAAP = allArticlePrice.find(contentValue => contentValue.id === product._id && contentValue.color === product.color);
+                console.log(returnAAP.color);
+                returnAAP.total = (returnAAP.price * parseInt(qtyInput.value));
                 cartUpdate(cartList);
                 updateShowCart();
             }
@@ -72,10 +105,11 @@ else {
 }
 
 
+// Mise à jour quantité + prix total du panier
 function updateShowCart(){
     if (cartList === null) {
-        totalQty.innerText = parseInt(0);
-        totalPrice.innerText = parseInt(0);
+        totalQty.innerText = 0;
+        totalPrice.innerText = 0;
         const newContent = document.createElement("h2");
         newContent.setAttribute("style", "text-align: center");
         newContent.textContent = "Panier vide";
@@ -83,18 +117,7 @@ function updateShowCart(){
     }
     else {
         totalQty.innerText = cartList.map(item => parseInt(item.qty)).reduce((compteur, valeur) => compteur + valeur);
-        for (product of cartList){
-            let KanapApiId = KanapAPI + product._id;
-            let articlePrice = parseInt(product.qty);
-            fetch(KanapApiId)
-            .then((res) => res.json())
-            .then ((infoProduct) => {
-                articlePrice = articlePrice * parseInt(infoProduct.price);
-                allArticlePrice.push(articlePrice);
-                console.log(allArticlePrice);
-            });
-            totalPrice.innerText = allArticlePrice.reduce((compteur, valeur) => compteur + valeur, 0);
-        }
+        totalPrice.innerText = allArticlePrice.map(item => parseInt(item.total)).reduce((compteur, valeur) => compteur + valeur);
 
     }
     
