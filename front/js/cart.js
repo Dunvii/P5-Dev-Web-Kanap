@@ -13,18 +13,45 @@ class articlePrice {
         this.total = total;
     }
 }
+const allRegex = [
+    {
+        name: "firstName",
+        regex: "/^[a-zéèçà]{2,50}(-| )?([a-zéèçà]{2,50})?$/gmi",
+        error: "Prénom incorrecte"
+    },
+    {
+        name: "lastName",
+        regex: "/^[a-zéèçà]{2,50}(-| )?([a-zéèçà]{2,50})?$/gmi",
+        error: "Nom incorrecte"
+    },
+    {
+        name: "address",
+        regex: "\d+\s(.+)\s\d+\s\w+",
+        error: "Adresse incorrecte"
+    },
+    {
+        name: "city",
+        regex: "/^\s*[a-zA-Z]{1}[0-9a-zA-Z][0-9a-zA-Z '-.=#/]*$/gmi",
+        error: "Ville incorrecte"
+    },
+    {
+        name: "email",
+        regex: "/^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/gm",
+        error: "email incorrecte, exemple : test@gmail.com"
+    }
+];
 
 // Verification si présence de panier(Si non affiche "0" + panier vide)
 if (cartList === null) {
     updateShowCart();
 }
 else {
+    liveCheckInputs();
     for(let product of cartList) {
     let KanapApiId = KanapAPI + product._id;
     fetch(KanapApiId)
     .then((res) => res.json())
     .then ((infoProduct) => {
-
         // Preparation informations pour calcul total quantité + prix
         if(allArticlePrice){
             let aAP = allArticlePrice.find(contentValue => contentValue.id === product._id && contentValue.color === product.color );
@@ -93,7 +120,6 @@ else {
                 let returnCart = cartList.find(contentValue => contentValue._id === product._id && contentValue.color === product.color);
                 returnCart.qty = parseInt(qtyInput.value);
                 let returnAAP = allArticlePrice.find(contentValue => contentValue.id === product._id && contentValue.color === product.color);
-                console.log(returnAAP.color);
                 returnAAP.total = (returnAAP.price * parseInt(qtyInput.value));
                 cartUpdate(cartList);
                 updateShowCart();
@@ -103,7 +129,6 @@ else {
     });
     }
 }
-
 
 // Mise à jour quantité + prix total du panier
 function updateShowCart(){
@@ -117,10 +142,9 @@ function updateShowCart(){
     }
     else {
         totalQty.innerText = cartList.map(item => parseInt(item.qty)).reduce((compteur, valeur) => compteur + valeur);
-        totalPrice.innerText = allArticlePrice.map(item => parseInt(item.total)).reduce((compteur, valeur) => compteur + valeur);
+        totalPrice.innerText = allArticlePrice.map(item => parseInt(item.total)).reduce((compteur, valeur) => compteur + valeur,0);
 
     }
-    
 }
 
 // Suppression d'un article de la page
@@ -133,3 +157,26 @@ function cartUpdate (product) {
     localStorage.setItem('cart', JSON.stringify(product));
     cartList = JSON.parse(localStorage.getItem('cart'));
 }
+
+
+function liveCheckInputs(){
+    const order = document.getElementById("order");
+    for (infos of allRegex){
+        let input = document.getElementById(infos.name);
+        let regex = infos.regex;
+        let error = input.nextElementSibling;
+        input.addEventListener("change", () => {
+        let testInput = regex.test(input.value);
+        if (testInput) {
+            error.innerText = "Ok";
+        }
+        else {
+            error.innerText = infos.regex;
+        }
+        });
+    }
+    order.addEventListener("click", function() {
+        // AU CLIQUE
+    });
+}
+{/* <p id="firstNameErrorMsg"><!-- ci est un message d'erreur --></p> */}
