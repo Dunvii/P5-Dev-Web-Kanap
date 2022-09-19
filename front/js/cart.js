@@ -184,7 +184,6 @@ function liveCheckInputs() {
         let infosContent = infos;
         let input = document.getElementById(infosContent.name);
         let error = input.nextElementSibling;
-        console.log(input);
         input.addEventListener("change", () => {
             let regex = infosContent.regex;
             let returnTest = testInput(input,regex);
@@ -213,11 +212,9 @@ function sendPost() {
             let error = input.nextElementSibling;
             if(test){
                 next = true;
-                console.log('Bon')
             }
             else {
                 next = false;
-                console.log('Pas Bon')
                 error.innerText = infosContent.error;
                 break;
                 
@@ -242,7 +239,7 @@ function sendPost() {
             })
                 .then(res => res.json())
                 .then(back => {
-                    console.log(order);
+                    localStorage.clear('cart');
                     document.location = `./confirmation.html?id=${back.orderId}`;
                 });
         }
