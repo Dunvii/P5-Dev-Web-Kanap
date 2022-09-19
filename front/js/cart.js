@@ -4,6 +4,7 @@ let addArticle = document.querySelector('#cart__items');
 let totalQty = document.querySelector('#totalQuantity');
 let totalPrice = document.querySelector('#totalPrice');
 const order = document.getElementById("order");
+const allInputs = document.querySelectorAll("form input[name]");
 let allArticlePrice = [];
 class articlePrice {
     constructor(id, price, color, qty, total) {
@@ -19,13 +20,13 @@ class articlePrice {
 const allRegex = [
     {
         name: "firstName",
-        regex: /^[a-zéèçà]{2,50}(-| )?([a-zéèçà]{2,50})?$/gmi,
+        regex: /^[A-Za-zÀ-ü-' ]+$/,
         error: "Prénom incorrect",
         validate: "Prénom ✓"
     },
     {
         name: "lastName",
-        regex: /^[a-zéèçà]{2,50}(-| )?([a-zéèçà]{2,50})?$/gmi,
+        regex: /^[A-Za-zÀ-ü-' ]+$/,
         error: "Nom incorrecte",
         validate: "Nom ✓"
     },
@@ -37,13 +38,13 @@ const allRegex = [
     },
     {
         name: "city",
-        regex: /^\s*[a-zA-Z]{1}[0-9a-zA-Z][0-9a-zA-Z '-.=#/]*$/gmi,
+        regex: /^[A-Za-zÀ-ü-' ]+$/,
         error: "Ville incorrecte",
         validate: "Ville ✓"
     },
     {
         name: "email",
-        regex: /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/gm,
+        regex: /.+\@.+\..+/,
         error: "email incorrecte, exemple : test@gmail.com",
         validate: "email ✓"
     }
@@ -180,9 +181,10 @@ function testInput(input, regex) {
 // Verification direct des champs avec message (Soucis restant : ordre d'affichage)
 function liveCheckInputs() {
     for(infos of allRegex) {
-        console.log(infos);
-        let input = document.getElementById(infos.name);
+        let infosContent = infos;
+        let input = document.getElementById(infosContent.name);
         let error = input.nextElementSibling;
+        console.log(input);
         input.addEventListener("change", () => {
             let regex = infosContent.regex;
             let returnTest = testInput(input,regex);
@@ -199,42 +201,53 @@ function liveCheckInputs() {
 
 // Verification + Requete POST à l'api (Soucis restant : Verification non complet ou décalé)
 function sendPost() {
-    order.addEventListener("click", (element) => {
-        element.preventDefault();
+    order.addEventListener("click", (event) => {
+        event.preventDefault();
+        let next = true;
         for(infos of allRegex){
-            console.log(infos);
-            let input = document.getElementById(infos.name);
-            let regex = infos.regex;
+            let infosContent = infos;
+            console.log(infosContent);
+            let input = document.getElementById(infosContent.name);
+            let regex = infosContent.regex;
             let test = testInput(input,regex);
+            let error = input.nextElementSibling;
             if(test){
-                console.log('Super');
-                continue;
+                next = true;
+                console.log('Bon')
             }
             else {
-                console.log("Pas bon");
-                return;
+                next = false;
+                console.log('Pas Bon')
+                error.innerText = infosContent.error;
+                break;
+                
             }
         }
-        fetch("http://localhost:3000/api/products/order", {
-            method: 'POST',
-            body: JSON.stringify(
-                {contact: {
-                    firstName: document.getElementById("firstName").value,
-                    lastName: document.getElementById("lastName").value,
-                    address: document.getElementById("address").value,
-                    city: document.getElementById("city").value,
-                    email: document.getElementById("email").value
+        if (next){
+            fetch("http://localhost:3000/api/products/order", {
+                method: 'POST',
+                body: JSON.stringify(
+                    {contact: {
+                        firstName: document.getElementById("firstName").value,
+                        lastName: document.getElementById("lastName").value,
+                        address: document.getElementById("address").value,
+                        city: document.getElementById("city").value,
+                        email: document.getElementById("email").value
+                    },
+                    products: cartList.map(product => product._id)
+                    }),
+                headers : {
+                    'Content-Type': 'application/json'
                 },
-                products: cartList.map(product => product._id)
-                }),
-            headers : {
-                'Content-Type': 'application/json'
-            },
-        })
-            .then(res => res.json())
-            .then(back => {
-                console.log(order);
-                document.location = `./confirmation.html?id=${back.orderId}`;
-            });
+            })
+                .then(res => res.json())
+                .then(back => {
+                    console.log(order);
+                    document.location = `./confirmation.html?id=${back.orderId}`;
+                });
+        }
+        else{
+            alert("Veuillez remplir les champs correctements.");
+        }
     })
 }
