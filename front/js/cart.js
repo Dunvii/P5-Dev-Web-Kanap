@@ -125,6 +125,13 @@ else {
                 qtyInput.addEventListener('input', function () {
                     if (qtyInput.value < 1 || qtyInput.value > 100) {
                         alert('Veuillez choisir une quantité comprise en 1 et 100.');
+                        qtyInput.value = 1;
+                        let returnCart = cartList.find(contentValue => contentValue._id === product._id && contentValue.color === product.color);
+                        returnCart.qty = qtyInput.value;
+                        let returnAAP = allArticlePrice.find(contentValue => contentValue.id === product._id && contentValue.color === product.color);
+                        returnAAP.total = (returnAAP.price * parseInt(qtyInput.value));
+                        cartUpdate(cartList);
+                        updateShowCart();
                     }
                     else {
                         let returnCart = cartList.find(contentValue => contentValue._id === product._id && contentValue.color === product.color);
@@ -153,7 +160,6 @@ function updateShowCart() {
     else {
         totalQty.innerText = cartList.map(item => parseInt(item.qty)).reduce((compteur, valeur) => compteur + valeur, 0);
         totalPrice.innerText = allArticlePrice.map(item => parseInt(item.total)).reduce((compteur, valeur) => compteur + valeur, 0);
-        console.log(cartList);
 
     }
 }
@@ -206,7 +212,6 @@ function sendPost() {
         let next = true;
         for(infos of allRegex){
             let infosContent = infos;
-            console.log(infosContent);
             let input = document.getElementById(infosContent.name);
             let regex = infosContent.regex;
             let test = testInput(input,regex);
