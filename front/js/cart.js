@@ -57,21 +57,21 @@ if (cartList === null) {
 else {
     liveCheckInputs();
     sendPost();
-    for (let product of cartList) {
-        let KanapApiId = KanapAPI + product._id;
-        fetch(KanapApiId)
+    fetch(KanapAPI)
             .then((res) => res.json())
             .then((infoProduct) => {
+            for (let product of cartList) {
+                const theProduct = infoProduct.find(contentValue => contentValue._id === product._id);
                 // Preparation informations pour calcul total quantité + prix
                 if (allArticlePrice) {
                     let aAP = allArticlePrice.find(contentValue => contentValue.id === product._id && contentValue.color === product.color);
                     if (!aAP) {
-                        let addProduct = new articlePrice(infoProduct._id, infoProduct.price, product.color, product.qty, (infoProduct.price * product.qty));
+                        let addProduct = new articlePrice(theProduct._id, theProduct.price, product.color, product.qty, (theProduct.price * product.qty));
                         allArticlePrice.push(addProduct);
                     }
                 }
                 else {
-                    let addProduct = new articlePrice(infoProduct._id, infoProduct.price);
+                    let addProduct = new articlePrice(theProduct._id, theProduct.price);
                     allArticlePrice.push(addProduct);
                 }
 
@@ -82,13 +82,13 @@ else {
                 newProduct.setAttribute("data-color", product.color);
                 newProduct.innerHTML = `
                     <div class="cart__item__img">
-                        <img src="${infoProduct.imageUrl}" alt="${infoProduct.altTxt}">
+                        <img src="${theProduct.imageUrl}" alt="${theProduct.altTxt}">
                     </div>
                     <div class="cart__item__content">
                     <div class="cart__item__content__description">
-                        <h2>${infoProduct.name}</h2>
+                        <h2>${theProduct.name}</h2>
                         <p>${product.color}</p>
-                        <p>${infoProduct.price}</p>
+                        <p>${theProduct.price}</p>
                     </div>
                     <div class="cart__item__content__settings">
                         <div class="cart__item__content__settings__quantity">
@@ -136,8 +136,8 @@ else {
                     }
                 });
                 updateShowCart();
-            });
-    }
+        }
+    });
 }
 
 // Mise à jour quantité + prix total du panier
@@ -151,8 +151,9 @@ function updateShowCart() {
         addArticle.appendChild(newContent);
     }
     else {
-        totalQty.innerText = cartList.map(item => parseInt(item.qty)).reduce((compteur, valeur) => compteur + valeur);
+        totalQty.innerText = cartList.map(item => parseInt(item.qty)).reduce((compteur, valeur) => compteur + valeur, 0);
         totalPrice.innerText = allArticlePrice.map(item => parseInt(item.total)).reduce((compteur, valeur) => compteur + valeur, 0);
+        console.log(cartList);
 
     }
 }
